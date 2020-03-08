@@ -1,4 +1,5 @@
 *.o
 *.so
+*.swp
 yari_server
 yari_client

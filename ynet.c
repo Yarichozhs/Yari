@@ -40,13 +40,18 @@ int ynet_connect(ynet_ctx_t *ctx, struct sockaddr_in *srv)
     return -1;
   }
 
-  bzero((char *) &serv_addr, sizeof(serv_addr));
+  if (srv == NULL)
+  {
+    bzero((char *) &serv_addr, sizeof(serv_addr));
 
-  serv_addr.sin_family      = AF_INET;
-  serv_addr.sin_addr.s_addr = INADDR_ANY;
-  serv_addr.sin_port        = htons(YNET_SER_PORT);
+    serv_addr.sin_family      = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port        = htons(YNET_SER_PORT);
 
-  if (connect(ctx->sfd, (struct sockaddr *) &serv_addr,
+    srv = &serv_addr;
+  }
+
+  if (connect(ctx->sfd, (struct sockaddr *)srv,
               sizeof(serv_addr)) < 0)
   {
     ytrace_msg(YTRACE_ERROR, "connect failed : %d\n", errno);

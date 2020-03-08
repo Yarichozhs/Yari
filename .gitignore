@@ -1,0 +1,4 @@
+*.o
+*.so
+yari_server
+yari_client

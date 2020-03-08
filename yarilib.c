@@ -20,7 +20,22 @@
 
 int yari_connect(yari_ctx_t *ctx, char *ip, int port)
 {
-  return ynet_connect(&ctx->ictx, NULL);
+  struct sockaddr_in serv_addr;
+  struct sockaddr_in *srv = NULL;
+
+  if (port == 0)
+    port = YNET_SER_PORT;
+
+  if (ip)
+  {
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family      = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(ip);
+    serv_addr.sin_port        = htons(port);
+    srv = &serv_addr;
+  }
+
+  return ynet_connect(&ctx->ictx, srv);
 }
 
 int yari_set(yari_ctx_t *ctx, char *key, int klen, char *val, int vlen)

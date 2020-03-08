@@ -22,6 +22,7 @@
 #include <ynets.h>
 #include <yhash.h>
 #include <ythread.h>
+#include <getopt.h>
 
 #define NTHREAD  (1024)
 #define LCTX_MAX (16)
@@ -33,6 +34,10 @@ ythread_ctx_t gtctx[NTHREAD];
 
 ynet_event_ctx_t  ynet_event_ctx;
 ynet_waiter_ctx_t ynet_waiter_ctx;
+
+#define YARI_SERVER_DEFAULT_NTHREADS (4)
+
+int nthreads = YARI_SERVER_DEFAULT_NTHREADS;
 
 void create_ds(void)
 {
@@ -58,19 +63,61 @@ void create_ds(void)
     exit(0);
 }
 
-int main()
+void parse_cmd_line(int argc, char *argv[])
+{
+  while (1)
+  {
+    int c;  
+    static struct option long_options[] =
+    {
+      /* Flag based options */
+      {"threads",    required_argument, NULL, 't'}, 
+      {"verbose",          no_argument, NULL, 'v'},
+      {0, 0, 0, 0}
+    };
+
+    /* getopt_long stores the option index here. */
+    int option_index = 0;
+
+    c = getopt_long(argc, argv, "t:v",
+                    long_options, &option_index);
+
+    /* Detect the end of the options. */
+    if (c == -1)
+      break;  
+
+    switch (c)
+    {
+      case 0: 
+        break;  
+
+      case 't':
+       nthreads = atol(optarg);
+       break;  
+
+      default:
+       exit(-1);
+    }
+  }
+
+  printf("# of server threads    = %d\n", nthreads);
+}
+
+
+int main(int argc, char *argv[])
 {
   int i;
-  int n = 4;                                            /* number of threads */
+
+  parse_cmd_line(argc, argv);
 
   create_ds();
 
-  for (i=0; i<n; i++)
+  for (i=0; i<nthreads; i++)
   {
     ythread_create(&gtctx[i], i, &ynet_waiter_ctx);
   }
 
-  for (i=0; i<n; i++)
+  for (i=0; i<nthreads; i++)
   {
     ythread_join(&gtctx[i]);
   }
